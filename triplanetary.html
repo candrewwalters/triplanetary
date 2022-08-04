@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Triplanetary</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body onload="startUp()">
+
+    <div id="headerDiv" style="float:left; height: 10vh; width: 98vw;">
+
+        <img src="triplanetarylogo.png" style="float: right; height: 100%;">
+    </div>
+
+    <div id="dashboardDiv" style = "width: 20%; float: left;">
+        <span style='font-family: "Arial Black", Gadget, sans-serif'>
+            Mission:
+
+        </span>
+
+        <br>
+        <br>
+        Boost off from Earth in a Transport with 10 units of fuel.
+        Reach Ganymede as quickly as possible without refueling.
+        <br>
+        <br>
+        <span style='font-family: "Arial Black", Gadget, sans-serif'>
+            Status:
+        </span>
+        <br>
+        <br>
+        Mission Log:
+        <br>
+        <textArea id= "log" oninput='logChanged()' style="border: 1px solid; word-wrap: break-word;">[Terra]</textArea>
+        <br>
+        <br>
+            Fuel: <span id= "fuelSpan" style="">10</span>
+        <br>
+        <div id="navigationDiv" style="" >
+            Current Velocity: <span id="velocitySpan">none</span>
+        </div>
+        <br>
+        <br>
+        <br>
+        <div id="messageDiv">
+            Craft is ready to boost to Earth orbit, choose a hex.
+        </div>
+        <br>
+        <div id="navInstDiv" style='font-size: 75%; display: none;'>
+            Select next destination. The red circle is the ship's location.
+            The green square is where the ship will end up without burning.
+            The green circles represent burns in six directions. The blue circles are previous positions.
+            You can undo your last move by deleting the last character of the Mission Log.
+            Copy and pasting the Mission Log lets you save, share, edit, etc your course.
+        </div>
+        <br>
+
+        <div id="infoDiv" style="">
+
+<span style="display: none;">            Coordinates: <span id="coords"></span><br><br></span>
+
+
+            <div id="none" style="display: block;">
+                Mouse over a planet for more info.
+            </div>
+
+            <div id="Sol" style="display: none;">
+                Big ball o'fusion.
+            </div>
+            <div id="Mercury" style="display: none;">
+              Diameter: 4880km (3,000 miles, 0.38 x Terra) <br>
+              Distance From Sun: 58,000,000km (36 million miles, 0.39 AU)<br>
+              Surface Gravity: 3.7m/s<sup>2 (0.38g)</sup><br>
+              Synodic Period: 88 terran days<br>
+              Sol: 58.5 terran days<br>
+            </div>
+            <div id="Venus" style="display: none;">
+              Diameter: 12,000km (7,500 miles, 0.95 x Terra) <br>
+              Distance From Sun: 108,000,000km (67 million miles, 0.71 AU)<br>
+              Surface Gravity: 8.9m/s<sup>2 (0.91g)</sup><br>
+              Synodic Period: 225 terran days<br>
+              Sol: 116.75 terran days<br>
+            </div>
+            <div id="Terra" style="display: none;">
+                Our home, for now.
+            </div>
+            <div id="Mars" style="display: none;">
+                Diameter: 6778km  <br>
+                Distance From Sun: 230,000,000km<br>
+                Surface Gravity: 3.7m/s<sup>2</sup><br>
+                Synodic Period: 687 terran days<br>
+                Sol: 24 hours 39 minutes<br>
+
+            </div>
+            <div id="Jupiter" style="display: none;">
+                I think it's looking at us.
+            </div>
+            <div id="Luna" style="display: none;">
+                *The* Moon. Natural satellite
+            </div>
+            <div id="Callisto" style="display: none;">
+                Need data here.
+            </div>
+            <div id="Ganymede" style="display: none;">
+                Fun name.
+            </div>
+            <div id="Io" style="display: none;">
+                So cold.
+            </div>
+            <div id="Ceres" style="display: none;">
+                Minor planet.
+            </div>
+            <div id="Clandestine" style="display: none;">
+                Nothing here but worthless chunks of rock, floating in space.
+            </div>
+
+            <br>
+
+        </div>
+
+        <div onclick = "showHelp();"  style=" border: solid thin; margin: auto">
+          Show Help
+        </div>
+<br>
+        <div onmouseover = "showLittleMap();" onmouseout = "hideLittleMap();" style=" border: solid thin;">
+          mouseover to show overview map
+        </div>
+
+    </div>
+
+    <div id="mapDiv" style = "width: 80%; float: left; overflow: scroll; height: 80vh;" onmousemove="mouseoverMap(event)" onclick="mapClick(event)" >
+
+                <canvas id="theMap" width="1225" height="1680" style="border:1px solid #000000; "></canvas>
+                <canvas id="cleanMap" width="1225" height="1680" style="border:1px solid #000000; display: none; "></canvas>
+                <canvas id="pathMap" width="1225" height="1680" style="border:1px solid #000000; display: none; "></canvas>
+
+            <canvas id="littleMap" width="613" height="825" style="border:1px solid #000000; display: none; ">
+            </canvas>
+
+            <img src='transportcounter1.png' id='transportCounter' style='display: none;'>
+
+
+    </div>
+
+    <div id='helpDiv' class='center'>
+
+      <p>
+        First, you should be familiar with the game <a href='http://www.sjgames.com/triplanetary/'>Triplanetary</a>
+        from Steve Jackson Games. In particular, you'll want to read the parts of the
+        <a href='http://www.sjgames.com/triplan/2018rules.pdf'>2018 Rules</a>
+        pertaining to astrogation.
+      </p>
+      <p>
+        If your ship begins the scenario on a planet you will see red circles in the surrounding
+        hexes you can 'boost' to. Click one and you'll see the ship counter appear on the map.
+        Green circles appear around your ship, click on one to accelerate in that direction. Your ship
+        will move and you'll see new green circles for further navigation. Your course so far is shown
+        as a blue line, and blue circles are your previous positions.
+      </p>
+      <p>
+        The mission log records all you have done so far. You can copy this string if you want to share
+        your brilliant navigation with others, and you can paste in a log and it's similar to loading a
+        saved game. You could even edit the log instead of clicking on the map.
+      </p>
+      <p>
+        Not that this little toy is still under development. Lots of things are don't work or lack polish.
+
+      </p>
+
+      <span class='myButton' onclick='hideHelp();'>Got it!</span>
+
+    </div>
+
+    <div id='winningDiv' class='center'>
+
+      <p>
+        Congratulations!
+
+      </p>
+      <p>
+        The trip took <span id='turnsToWin'></span> turns.
+
+      </p>
+
+      <span class='myButton' onclick='document.getElementById("winningDiv").style.display="none";'>Got it!</span>
+
+    </div>
+
+
+    <div>
+        <img src="arrow1.png" id="arrow1" style="display: none;" >
+        <img src="arrow2.png" id="arrow2" style="display: none;" >
+        <img src="arrow3.png" id="arrow3" style="display: none;" >
+        <img src="arrow4.png" id="arrow4" style="display: none;" >
+        <img src="arrow5.png" id="arrow5" style="display: none;" >
+        <img src="arrow6.png" id="arrow6" style="display: none;" >
+        <img src="harrow1.png" id="harrow1" style="display: none;" >
+        <img src="harrow2.png" id="harrow2" style="display: none;" >
+        <img src="harrow3.png" id="harrow3" style="display: none;" >
+        <img src="harrow4.png" id="harrow4" style="display: none;" >
+        <img src="harrow5.png" id="harrow5" style="display: none;" >
+        <img src="harrow6.png" id="harrow6" style="display: none;" >
+        <img src="asteroid1.png" id="asteroid1" style="display: none;" >
+        <img src="asteroid2.png" id="asteroid2" style="display: none;" >
+        <img src="asteroid3.png" id="asteroid3" style="display: none;" >
+        <img src="minorplanet.png" id="minorplanet" style="display: none;" >
+    </div>
+
+<script>
+
+    planets = [
+
+        { number: 0, col: 15, row: 44, gravity: 1, diameter: 17, name: "Sol", color: "yellow", land: 0 },
+        { number: 1, col: 17, row: 47, gravity: 1, diameter: 5, name: "Mercury", color: "red", land: 1 },
+        { number: 2, col: 9, row: 48, gravity: 1, diameter: 8, name: "Venus", color: "CornflowerBlue", land: 1 },
+        { number: 3, col: 25, row: 38, gravity: 1, diameter: 8, name: "Terra", color: "blue", land: 1 },
+        { number: 4, col: 6, row: 24, gravity: 1, diameter: 8, name: "Mars", color: "red", land: 1 },
+        { number: 5, col: 17, row: 8, gravity: 1, diameter: 12, name: "Jupiter", color: "yellow", land: 0 },
+        { number: 6, col: 27, row: 37, gravity: 0, diameter: 4, name: "Luna", color: "white", land: 1 },
+        { number: 7, col: 13, row: 8, gravity: 1, diameter: 4, name: "Callisto", color: "green", land: 1 },
+        { number: 8, col: 20, row: 6, gravity: 1, diameter: 4, name: "Ganymede", color: "CornflowerBlue", land: 1 },
+        { number: 9, col: 18, row: 10, gravity: 0, diameter: 4, name: "Io", color: "red", land: 1 },
+        { number: 10, col: 9, row: 17, gravity: 0, diameter: 0, name: "Ceres", color: "", land: 1 },
+        { number: 11, col: 26, row: 18, gravity: 0, diameter: 0, name: "Clandestine", color: "", land: 1 }
+    ];
+
+    hexWidth = 35;
+    hexHeight = 40;
+    hexSide = 20
+
+    rows = 55;
+    columns = 35;
+
+    navOptions = [];
+    gravHexes = [];
+
+
+    const statusLanded = 1;
+    const statusOrbiting = 2;
+    const statusDeepSpace = 3;
+    const statusCrashed = 4;
+    shipStatus = statusLanded;
+    whichPlanet = 3;
+
+    function startUp() {
+
+        mapDraw = document.getElementById("theMap").getContext("2d");
+        mapDraw.lineWidth = 0.5;
+
+        littleMapDraw = document.getElementById("littleMap").getContext("2d");
+        cleanMapDraw = document.getElementById("cleanMap").getContext("2d");
+        pathMapDraw = document.getElementById("pathMap").getContext("2d");
+
+        for ( let row = 0; row < rows; row += 2 ) {
+
+            baseY = row * 30;  // why is this? something to do with doing two rows at once...
+
+            for ( let col = 0; col < columns; col++ ) {
+
+                baseX = col * hexWidth;
+
+                //console.log( row + ", " + col );
+
+                mapDraw.moveTo( baseX + 0, baseY + hexSide/2 );
+                mapDraw.lineTo( baseX + hexWidth/2, baseY );
+                mapDraw.lineTo( baseX + hexWidth, baseY + hexSide/2 );
+                mapDraw.lineTo( baseX + hexWidth, baseY + hexSide/2 + hexSide );
+                mapDraw.lineTo( baseX + hexWidth/2, baseY + hexHeight );
+                mapDraw.lineTo( baseX + 0, baseY + hexSide/2 + hexSide );
+                mapDraw.moveTo( baseX + hexWidth/2, baseY + hexHeight ); // that's for the next row, the short, odd numbered rows (by zero count)
+                mapDraw.lineTo( baseX + hexWidth/2, baseY  + 60); // that's for the next row, the short, odd numbered rows (by zero count)
+                //mapDraw.stroke();
+            }
+        }
+
+        mapDraw.stroke();
+
+        mapDraw.font = "italic bold 18px Arial";
+
+        mapDraw.textAlign="right";
+        mapDraw.fillText( planets[0].name, planets[0].col*hexWidth - 5, planets[0].row*30 + 7 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[1].name, (planets[1].col + 1.5 ) * hexWidth, planets[1].row*30 + 10 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[2].name, (planets[2].col + 1 ) * hexWidth, planets[2].row*30 + 10 );
+
+        mapDraw.textAlign="right";
+        mapDraw.fillText( planets[3].name, planets[3].col*hexWidth - 5, planets[3].row*30 + 7 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[4].name, (planets[4].col + 1 ) * hexWidth, planets[4].row*30 + 10 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[5].name, (planets[5].col + 1 ) * hexWidth, planets[5].row*30 + 8 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[6].name, (planets[6].col + 1.5 ) * hexWidth, planets[6].row*30 + 10 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[7].name, (planets[7].col + 1 ) * hexWidth, planets[7].row*30 + 8 );
+
+        mapDraw.textAlign="left";
+        mapDraw.fillText( planets[8].name, (planets[8].col + 1 ) * hexWidth, planets[8].row*30 + 8 );
+
+        mapDraw.font = "italic bold 14px Arial";
+
+        mapDraw.textAlign="center";
+        mapDraw.fillText( planets[9].name, (planets[9].col + 0.5 ) * hexWidth, planets[9].row*30 + 14 );
+
+        mapDraw.textAlign="center";
+        mapDraw.fillText( planets[10].name, (planets[10].col + 1 ) * hexWidth, planets[10].row*30 + 10 );
+
+        mapDraw.textAlign="center";
+        mapDraw.fillText( planets[11].name, (planets[11].col + 0.5 ) * hexWidth, planets[11].row*30 + 10 );
+
+        collisionPolys = [];
+
+        for ( let i=0; i<planets.length; i++ ) {
+
+            drawPlanet( planets[i] );
+
+        }
+
+
+        minorPlanet( planets[10].col, planets[10].row );
+        minorPlanet( planets[11].col, planets[11].row );
+
+
+        asteroids = [ [ 0, 14 ], [ 1, 14 ], [ 1, 15 ], [ 1, 16 ], [ 0, 16 ], [ 3, 16 ], [ 0, 20 ], [ 1, 20 ], [ 2, 20 ],
+                        [ 1, 19 ], [ 1, 21 ], [ 2, 18 ], [ 4, 18 ], [ 5, 18 ], [ 5, 17 ], [ 7, 17 ], [ 10, 17 ], [ 11, 20 ], [ 11, 22 ],
+                        [ 12, 21 ], [ 13, 20 ], [ 12, 24 ], [ 13, 23 ], [ 13, 25 ], [ 15, 23], [ 15, 25 ], [ 16, 24 ], [ 15, 22 ], [ 16, 21 ],
+                        [ 15, 19 ], [ 16, 22 ], [ 15, 21 ], [ 17, 21 ], [ 20, 19 ], [ 20, 18 ], [ 21, 16 ], [ 22, 17 ], [18, 19 ],
+                        [ 19, 21 ], [ 19, 22 ], [ 18, 23 ], [ 19, 24], [ 21, 24 ], [ 22, 24 ], [ 21, 23 ], [ 22, 22 ],
+                        [ 24, 22 ], [ 24, 23 ], [ 23, 20 ], [ 22, 19 ], [23, 19 ], [ 26, 22 ], [ 28, 22 ], [ 27, 23 ],
+                        [ 26, 20 ], [ 25, 19], [ 26, 19 ], [ 25, 18 ], [ 27, 18 ], [ 25, 17 ], [ 26, 17 ],  //  That's the group around Clandestine
+                        [ 28, 18 ], [28, 19 ], [ 29, 21 ], [ 30, 22 ], [ 30, 23 ], [ 31, 22 ], [ 31, 20 ],
+                        [ 29, 17 ], [ 31, 18 ], [ 32, 18 ], [ 33, 18 ], [ 32, 21 ], [ 33, 21 ], [ 34, 20 ]
+                        ];
+
+        for ( let i=0; i<asteroids.length; i++ ) {
+
+            asteroid( asteroids[i][0], asteroids[i][1] );
+
+        }
+
+
+        mapDraw.lineWidth=2;
+
+        x = planets[1].col;
+        y = planets[1].row;
+        detectionRange=[ [ x-1, y-2 ], [ x-2, y-5 ], [ x+3, y-5 ], [ x+5, y ], [ x+2, y ], [ x+1, y+2 ], [ x+3, y+5], [ x-2, y+5 ], [ x-5, y ], [ x-2, y ] ];
+        mapDraw.strokeStyle = planets[1].color;
+        drawDetection();
+
+        x = planets[2].col;
+        y = planets[2].row;
+        detectionRange = [ [ x-5, y ], [ x-3, y-5 ], [ x+2, y-5 ], [ x+5, y ], [ x+2, y+5 ], [ x-3, y+5 ] ];
+        mapDraw.strokeStyle = planets[2].color;
+        drawDetection();
+
+        x = planets[3].col;
+        y = planets[3].row;
+        detectionRange = [ [ x-5, y ], [ x-3, y-5 ], [ x-1, y-5 ], [ x, y-6 ], [ x+5, y-6], [ x+7, y-1 ], [  x+5, y+4 ], [ x+3, y+4 ], [ x+2, y+5 ], [ x-3, y+5 ] ];
+        mapDraw.strokeStyle = planets[3].color;
+        drawDetection();
+
+        x = planets[4].col;
+        y = planets[4].row;
+        detectionRange = [ [ x-5, y ], [ x-3, y-5 ], [ x+2, y-5 ], [ x+5, y ], [ x+2, y+5 ], [ x-3, y+5 ] ];
+        mapDraw.strokeStyle = planets[4].color;
+        drawDetection();
+
+        x = planets[7].col;
+        y = planets[7].row;
+        detectionRange = [ [ x-5, y ], [ x-3, y-5 ], [ x+2, y-5 ], [ x+3, y-3 ], [ x+2, y ], [ x+3, y+3 ], [ x+2, y+5 ], [ x-3, y+5 ] ];
+        mapDraw.strokeStyle = planets[7].color;
+        drawDetection();
+
+        x = planets[8].col;
+        y = planets[8].row;
+        detectionRange = [ [ x, y-1 ], [ x+2, y-5 ], [ x+5, y], [ x+2, y+5 ], [ x, y+1 ], [ x+2, y+5 ], [ x+5, y], [ x+2, y-5 ] ];
+        mapDraw.strokeStyle = planets[8].color;
+        drawDetection();
+
+        x = planets[9].col;
+        y = planets[9].row;
+        detectionRange = [ [ x-1, y ], [ x-5, y ], [ x-3, y+5 ], [ x+2, y+5 ], [ x, y+1], [ x+2, y+5 ],[ x-3, y+5 ],  [ x-5, y ] ];
+        mapDraw.strokeStyle = planets[9].color;
+        drawDetection();
+
+
+
+        document.getElementById("mapDiv").scrollTop=582;
+        document.getElementById("mapDiv").scrollLeft=175;
+
+        littleMapDraw.drawImage( document.getElementById("theMap"), 0, 0, 613, 825 );
+        cleanMapDraw.drawImage( document.getElementById("theMap"), 0, 0 );
+        pathMapDraw.drawImage( document.getElementById("theMap"), 0, 0 );
+
+        startScenario();
+
+    }
+
+    function startScenario() {
+
+        shipX = planets[3].col;
+        shipY = planets[3].row;
+        shipFuel = scenarioFuel = 10;
+        shipVelocity = "";
+        shipStatus = statusLanded;
+//        landed = 3;
+        whichPlanet = 3;
+        scenarioDestination = 8;
+
+        document.getElementById('log').value='[Terra]';
+
+        velocityArray = [];
+
+        updateMap('startScenario');
+
+        generateNavOptions();
+
+    }
+
+    function drawBoost( wanderer ) {
+
+        navOptions=[];
+
+        if ( shipY%2 == 1 ) {
+
+            drawBoostCircle( shipX, shipY-1, 5 );
+            drawBoostCircle( shipX+1, shipY-1, 6 );
+            drawBoostCircle( shipX-1, shipY, 4 );
+            drawBoostCircle( shipX+1, shipY, 1 );
+            drawBoostCircle( shipX, shipY+1, 3 );
+            drawBoostCircle( shipX+1, shipY+1, 2 );
+
+        } else {
+
+            drawBoostCircle( shipX-1, shipY-1, 5 );
+            drawBoostCircle( shipX, shipY-1, 6 );
+            drawBoostCircle( shipX-1, shipY, 4 );
+            drawBoostCircle( shipX+1, shipY, 1 );
+            drawBoostCircle( shipX-1, shipY+1, 3 );
+            drawBoostCircle( shipX, shipY+1, 2 );
+
+        }
+
+    }
+
+    function drawBoostCircle( x, y, direction ) {
+
+        centerCoords( x, y );
+
+//        console.log( centerX, centerY );
+
+        mapDraw.beginPath();
+        mapDraw.arc( centerX, centerY, 5, 0, 2 * Math.PI);
+        mapDraw.fillStyle = "blue";
+        mapDraw.fill();
+        mapDraw.closePath();
+
+        navOptions.push([ centerX-15, centerY-15, centerX+15, centerY+15, direction, x, y ]);
+
+    }
+
+    function logChanged() {
+
+      //console.log("logChanged()");
+
+      //first check if it makes Sense
+      logString = document.getElementById('log').value
+
+      cleanedString = logString;
+      for ( let i = 0; i < planets.length; i++ ){
+        cleanedString = cleanedString.replace( '[' + planets[i].name + ']', '' );
+        //console.log(i+" "+planets[i].name);
+      }
+      cleanedString = cleanedString.replace(/[0-6]/g,'');
+
+      if ( logString.length > 0 ) {
+        document.getElementById('messageDiv').innerText = 'Mission Log has extraneous stuff in it! (' + cleanedString + ')';
+      }
+
+      //if not restore previous log?
+
+      //call updateMap
+      updateMap('logChanged');
+
+    }
+
+// Interesting Logs
+//[Terra]4000634564000000226
+//[Terra]45440000000000212
+//[Terra]434430 - crashes into sun for test
+
+    function updateMap(xVar) {
+
+//      console.log('Starting updateMap('+xVar+')');
+
+      logString = document.getElementById('log').value;
+
+      //set shipX,Y to starting planets
+      if ( logString[0] != '[' ) {
+        badLog(1);
+        return;
+      }
+
+      ending = logString.indexOf(']');
+      if ( ending == -1 ) {
+        badLog(2);
+        return;
+      }
+
+      startLocation = logString.substring(1,ending);
+      shipX = shipY = 0;
+
+      for ( let i=0; i < planets.length; i++ ) {
+
+        if ( planets[i].name == startLocation )  {
+          shipX = planets[i].col;
+          shipY = planets[i].row;
+          break;
+        }
+      }
+
+      if ( shipX == 0 && shipY == 0 ) {
+        badLog(3);
+        return;
+      }
+//      console.log('Initial location established.');
+
+      // if the log is empty we're ready to boost
+      if ( logString.length == ending + 1 ) {
+        document.getElementById('messageDiv').innerText="Ship is landed on " + startLocation + ", choose hex to boost to orbit.";
+        return;
+      }
+
+      //boost ship to adjacent hexes
+
+      //console.log("Ship location: " + shipX + ", " + shipY);
+
+      oldShipX = shipX;
+      oldShipY = shipY;
+      moveShip ( logString[ ending + 1 ] );
+
+      pathMapDraw.clearRect(0, 0, pathMap.width, pathMap.height);
+      pathMapDraw.drawImage( document.getElementById("cleanMap"), 0, 0 );
+
+      centerCoords( oldShipX, oldShipY );
+      originShipX = centerX;
+      originShipY = centerY;
+
+      centerCoords( shipX, shipY );
+      destinationShipX = centerX;
+      destinationShipY = centerY;
+
+      pathMapDraw.strokeStyle = "purple";
+
+      pathMapDraw.beginPath();
+      pathMapDraw.arc( originShipX, originShipY, 5 ,0, 2 * Math.PI );
+      pathMapDraw.stroke();
+//                pathMapDraw.closePath();
+
+      pathMapDraw.strokeStyle = "blue";
+      pathMapDraw.beginPath();
+      pathMapDraw.moveTo( originShipX, originShipY );
+      pathMapDraw.lineTo( destinationShipX, destinationShipY );
+      pathMapDraw.stroke();
+      pathMapDraw.closePath();
+
+//      console.log("Ship boosts to: " + shipX + ", " + shipY);
+
+      shipVelocity='';
+      shipFuel = scenarioFuel;
+      nextMove = ending + 2;
+
+      //while next char != [ add velocity and draw line
+
+//      console.log('Beginning loop through logString (' + logString + ').');
+
+      while ( nextMove < logString.length ) {
+
+//        console.log('nextMove is ' + nextMove + '/' + logString.length + ': ' + logString[nextMove] + '.');
+
+
+        // add velocity from next char of logString & pay fuel
+        if ( '123456'.indexOf( logString[ nextMove ] ) > -1 ) {
+
+          shipVelocity += logString[ nextMove ];
+//          console.log('adding ' + logString[nextMove] + ' to velocity');
+          shipFuel--;
+          document.getElementById("fuelSpan").innerText = shipFuel;
+//console.log("XXX=>"+shipVelocity);
+          // clear opposite thrust vectors
+          removeOppositeVectors();
+//console.log("OOO=>"+shipVelocity);
+
+        } else if ( logString[ nextMove ] == '0' ) {
+          // we're coasting, I don't think we need anything here
+        } else if ( logString[ nextMove ] == '[' ) {
+          //we're landing - is it valid?
+          //reset fuel
+          //skip nextMove ahead to after ']'
+        } else {
+          console.log( 'badLog  ('+ logString[ nextMove ] +')' );
+        }
+
+        // determine next hex
+        oldShipX = shipX;
+        oldShipY = shipY;
+        for ( let i=0; i < shipVelocity.length; i++ ) {
+
+          moveShip( shipVelocity[i] );
+//          console.log('Moving ship ' + shipVelocity[i] + '.');
+
+        }
+        // draw line
+        centerCoords( oldShipX, oldShipY );
+        originShipX = centerX;
+        originShipY = centerY;
+
+        centerCoords( shipX, shipY );
+        destinationShipX = centerX;
+        destinationShipY = centerY;
+
+        pathMapDraw.strokeStyle = "blue";
+
+        pathMapDraw.beginPath();
+        pathMapDraw.arc( originShipX, originShipY, 5 ,0, 2 * Math.PI );
+        pathMapDraw.stroke();
+//                pathMapDraw.closePath();
+
+        pathMapDraw.strokeStyle = "blue";
+        pathMapDraw.beginPath();
+        pathMapDraw.moveTo( originShipX, originShipY );
+        pathMapDraw.lineTo( destinationShipX, destinationShipY );
+        pathMapDraw.stroke();
+        pathMapDraw.closePath();
+
+//        deepSpace=1;
+
+// first, are we now sitting on a planet we were orbiting? if so check for win, refresh fuel, zero velocity
+
+        if ( shipStatus == statusOrbiting
+                && shipX == planets[ whichPlanet ].col && shipY == planets[ whichPlanet ].row ) {
+
+          shipStatus = statusLanded;
+
+          if ( whichPlanet == scenarioDestination ) {
+            // player won!
+
+            document.getElementById( 'winningDiv' ).style.display = 'block';
+
+            document.getElementById( 'turnsToWin' ).innerText = document.getElementById('log').value.length - 7;
+
+          } else {
+            shipFuel = scenarioFuel;
+            shipVelocity = '';
+            document.getElementById("fuelSpan").innerText = shipFuel;
+            document.getElementById('messageDiv').innerText = 'You have landed on ' + planets[whichPlanet].name
+                + ' and refueled.';
+          }
+
+// second, did we crash into anything?
+        } else if ( planetCrashedInto() > -1 ) {
+
+          shipStatus = statusCrashed;
+          whichPlanet = planetCrashedInto();
+          document.getElementById('messageDiv').innerText = 'Your course passed through '
+              + planets[ whichPlanet ].name + '. You have crashed.';
+          shipFuel = 0;
+          shipStatus = statusCrashed;
+          break;
+
+// third, are we orbiting some planet?
+        } else if ( checkForOrbit( shipX, shipY ) != 'no orbit' ) {
+
+          shipStatus = statusOrbiting
+          whichPlanet = planets.find( o => o.name == checkForOrbit( shipX, shipY ) ).number;
+          document.getElementById('messageDiv').innerText = 'You are orbiting ' + checkForOrbit( shipX, shipY )
+                + '.';
+
+        } else  {
+
+          shipStatus = statusDeepSpace
+          document.getElementById('messageDiv').innerText = 'You are in deep space.';
+
+        }
+
+
+        // add gravity from movement to velocity
+
+//        console.log('Checking for gravHexes...');
+
+        for ( let j=0; j<gravHexes.length; j++ ) {
+
+          entered=0;
+
+          if ( shipX == gravHexes[j][11] && shipY == gravHexes[j][12] ) {
+
+            // If we end the turn in the hex it it applies.
+//            console.log( "Ended the turn in grav hex " + shipX + ", " + shipY );
+            entered=1;
+
+          } else if ( oldShipX == gravHexes[j][11] && oldShipY == gravHexes[j][12] ) {
+
+            // If we began the turn in the hex it does not count.
+//            console.log( "Left grav hex " + shipX + ", " + shipY );
+            continue;
+
+          }
+
+          if ( !( shipX == gravHexes[j][11] && shipY == gravHexes[j][12] ) ) {
+
+
+              for ( k=1; k<9; k+=2 ){
+
+                  if ( intersects( gravHexes[j][k],
+                                     gravHexes[j][k+1],
+                                     gravHexes[j][k+2],
+                                     gravHexes[j][k+3],
+                                     originShipX, originShipY,
+                                     destinationShipX, destinationShipY ) ) {
+                      entered++;
+//                      console.log("...passed through grav hex at " + gravHexes[j][11] + ", " + gravHexes[j][12] );
+                  }
+
+              }
+
+              if ( intersects( gravHexes[j][k],
+                                  gravHexes[j][k+1],
+                                  gravHexes[j][1],
+                                  gravHexes[j][2],
+                                  originShipX, originShipY,
+                                  destinationShipX, destinationShipY ) ) {
+                  entered++;
+//                  console.log("...passed through grav hex at " + gravHexes[j][11] + ", " + gravHexes[j][12] );
+              }
+
+            }
+
+            if ( entered > 0 ) {
+
+                //add the direction
+//                            velocityArray.push( gravHexes[j][0].toString() );
+//                    console.log( "pushing " + gravHexes[j][0] +" "+ gravHexes[j][0].toString() );
+
+                shipVelocity += gravHexes[j][0].toString();
+
+//                console.log( "Adding  " + gravHexes[j][0].toString() + " to shipVelocity." );
+
+            } // end of applying gravHex
+
+        } // end of j loop through gravHexes (which are pentagons)
+
+        removeOppositeVectors();
+
+        nextMove++;
+
+//        console.log('Incremented nextMove to ' + nextMove + '.');
+
+      } //  end of next move in logstring
+
+
+      if ( shipStatus != statusCrashed ) {
+        centerCoords( shipX, shipY );
+        pathMapDraw.drawImage( document.getElementById("transportCounter"), centerX-10, centerY-10, 20, 20 );
+      }
+
+      // end of string draw nav optionString
+
+      mapDraw.clearRect(0, 0, theMap.width, theMap.height);
+
+      mapDraw.drawImage( document.getElementById("pathMap"), 0, 0 );
+
+      document.getElementById("velocitySpan").innerText = shipVelocity;
+
+      if ( shipStatus != statusCrashed ) {
+        generateNavOptions();
+      }
+//      shipChar = "&#128640;";
+//      centerCoords( shipX, shipY );
+
+//      mapDraw.fillText( "🚀", centerX, centerY );
+
+//      console.log('Finished updateMap()');
+
+    }
+
+    function moveShip( direction ) {
+
+      if ( shipY%2 == 1 ) {
+
+          switch ( direction ) {
+              case "1":
+                  shipX++;
+                  break;
+              case "2":
+                  shipX++;
+                  shipY++;
+                  break;
+              case "3":
+                  shipY++;
+                  break;
+              case "4":
+                  shipX--;
+                  break;
+              case "5":
+                  shipY--;
+                  break;
+              case "6":
+                  shipX++;
+                  shipY--;
+                  break;
+                  default:
+                    badLog('4 - position ' + (ending + 1) + ' is ' + logString[ ending + 1 ] );
+                    break;
+          }
+
+      } else {
+
+          switch ( direction ) {
+              case "1":
+                  shipX++;
+                  break;
+              case "2":
+                  shipY++;
+                  break;
+              case "3":
+                  shipX--;
+                  shipY++;
+                  break;
+              case "4":
+                  shipX--;
+                  break;
+              case "5":
+                  shipX--;
+                  shipY--;
+                  break;
+              case "6":
+                  shipY--;
+                  break;
+              default:
+                badLog('4 - position ' + (ending + 1) + ' is ' + logString[ ending + 1 ] );
+                break;
+          }
+      }
+
+    }
+
+    function checkForOrbit( xCoord, yCoord ) {
+
+      for ( let i = 0; i < gravHexes.length; i++ ) {
+
+        if ( gravHexes[i][11] == xCoord && gravHexes[i][12] == yCoord ) {
+          switch (gravHexes[i][0]) {
+
+            case 1:
+              if ( shipVelocity == '3' || shipVelocity == '5' ){
+                return gravHexes[i][13].name
+              }
+
+            case 2:
+              if ( shipVelocity == '4' || shipVelocity == '6' ){
+                return gravHexes[i][13].name;
+              }
+
+            case 3:
+              if ( shipVelocity == '1' || shipVelocity == '5' ){
+                return gravHexes[i][13].name
+              }
+
+            case 4:
+              if ( shipVelocity == '2' || shipVelocity == '6' ){
+                return gravHexes[i][13].name;
+              }
+
+            case 5:
+              if ( shipVelocity == '1' || shipVelocity == '3' ){
+                return gravHexes[i][13].name
+              }
+
+            case 6:
+              if ( shipVelocity == '4' || shipVelocity == '2' ){
+                return gravHexes[i][13].name;
+              }
+
+          }
+        }
+
+      }
+
+      return 'no orbit';
+
+    }
+
+    function badLog(which) {
+      document.getElementById('messageDiv').innerText="Bad Nav Log, can't cope (" + which + ").";
+    }
+
+    function mapClick( theEvent ) {
+
+//        moved=0;
+
+        for ( let i=0; i<navOptions.length; i++ ) {
+
+            if ( theEvent.offsetX >= navOptions[i][0] &&
+                 theEvent.offsetY >= navOptions[i][1] &&
+                 theEvent.offsetX <= navOptions[i][2] &&
+                 theEvent.offsetY <= navOptions[i][3] ) {
+
+                 document.getElementById("log").value+=navOptions[i][4];
+
+//                console.log("adding " + navOptions[i][4] + " to log");
+
+                updateMap('mapClick');
+
+                break;
+
+
+            } // end of if click is in this nav option
+
+        } // end of navptions loop
+
+
+    }
+
+
+
+
+
+    function removeOppositeVectors() {
+
+      // clean up velocity
+      velocityArray = shipVelocity.split("");
+
+      if ( velocityArray.indexOf("1") > -1 &&  velocityArray.indexOf("4") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("1"), 1 );
+           velocityArray.splice( velocityArray.indexOf("4"), 1 );
+      }
+
+      if ( velocityArray.indexOf("2") > -1 &&  velocityArray.indexOf("5") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("2"), 1 );
+           velocityArray.splice( velocityArray.indexOf("5"), 1 );
+      }
+
+      if ( velocityArray.indexOf("3") > -1 &&  velocityArray.indexOf("6") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("3"), 1 );
+           velocityArray.splice( velocityArray.indexOf("6"), 1 );
+      }
+
+      if ( velocityArray.indexOf("2") > -1 &&  velocityArray.indexOf("6") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("2"), 1 );
+           velocityArray.splice( velocityArray.indexOf("6"), 1 );
+           velocityArray.push( "1" );
+      }
+
+      if ( velocityArray.indexOf("1") > -1 &&  velocityArray.indexOf("3") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("1"), 1 );
+           velocityArray.splice( velocityArray.indexOf("3"), 1 );
+           velocityArray.push( "2" );
+      }
+
+      if ( velocityArray.indexOf("2") > -1 &&  velocityArray.indexOf("4") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("2"), 1 );
+           velocityArray.splice( velocityArray.indexOf("4"), 1 );
+           velocityArray.push( "3" );
+      }
+
+      if ( velocityArray.indexOf("3") > -1 &&  velocityArray.indexOf("5") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("3"), 1 );
+           velocityArray.splice( velocityArray.indexOf("5"), 1 );
+           velocityArray.push( "4" );
+      }
+
+      if ( velocityArray.indexOf("4") > -1 &&  velocityArray.indexOf("6") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("4"), 1 );
+           velocityArray.splice( velocityArray.indexOf("6"), 1 );
+           velocityArray.push( "5" );
+      }
+
+      if ( velocityArray.indexOf("5") > -1 &&  velocityArray.indexOf("1") > -1 ) {
+           velocityArray.splice( velocityArray.indexOf("5"), 1 );
+           velocityArray.splice( velocityArray.indexOf("1"), 1 );
+           velocityArray.push( "6" );
+      }
+
+      shipVelocity=velocityArray.join('');
+
+    }
+
+    function generateNavOptions() {
+
+      navOptions=[];
+
+        coastX = shipX;
+        coastY = shipY;
+
+//        console.log( velocityArray );
+
+        for ( let i=0; i < velocityArray.length; i++ ) {
+
+//            console.log( i + ", " + velocityArray[i] + ", " + coastY );
+
+            if ( coastY%2 == 1 ) {
+
+                switch ( velocityArray[i] ) {
+                    case "1":
+                        coastX++;
+                        break;
+                    case "2":
+                        coastX++;
+                        coastY++;
+                        break;
+                    case "3":
+                        coastY++;
+                        break;
+                    case "4":
+                        coastX--;
+                        break;
+                    case "5":
+                        coastY--;
+                        break;
+                    case "6":
+                        coastX++;
+                        coastY--;
+                        break;
+                }
+
+            } else {
+
+                switch ( velocityArray[i] ) {
+                    case "1":
+                        coastX++;
+                        break;
+                    case "2":
+                        coastY++;
+                        break;
+                    case "3":
+                        coastX--;
+                        coastY++;
+                        break;
+                    case "4":
+                        coastX--;
+                        break;
+                    case "5":
+                        coastX--;
+                        coastY--;
+                        break;
+                    case "6":
+                        coastY--;
+                        break;
+                }
+            }
+
+        }
+
+//        console.log( "ship: " + shipX + ", " + shipY );
+//        console.log( "coast: " + coastX + ", " + coastY );
+
+        // coastX and CoastY are established
+
+        if ( document.getElementById("log").value.slice(-1) != ']' ) {
+
+          centerCoords( coastX, coastY );
+          mapDraw.beginPath();
+          mapDraw.strokeStyle = "green";
+          mapDraw.rect( centerX - 13, centerY - 13, 26, 26 );
+          mapDraw.stroke();
+          mapDraw.closePath();
+
+          navOptions.push([ centerX - 15, centerY - 15, centerX + 15, centerY + 15, 0, coastX, coastY ] );
+        } else {
+          navOptions.push([ centerX, centerY, centerX, centerY, 0, coastX, coastY ] );
+        }
+
+
+
+        //console.log( coastY );
+
+        if ( coastY%2 == 1 ) {
+
+            //console.log("odd");
+
+            destY = coastY;
+            destX = coastX + 1;
+            pushDestination( 1 );
+
+            destY = coastY + 1;
+            destX = coastX + 1;
+            pushDestination( 2 );
+
+            destY = coastY + 1;
+            destX = coastX;
+            pushDestination( 3 );
+
+            destY = coastY;
+            destX = coastX - 1;
+            pushDestination( 4 );
+
+            destY = coastY - 1;
+            destX = coastX;
+            pushDestination( 5 );
+
+            destY = coastY - 1;
+            destX = coastX + 1;
+            pushDestination( 6 );
+
+        } else {
+
+            //console.log("even");
+
+            destY = coastY;
+            destX = coastX + 1;
+            pushDestination( 1 );
+
+            destY = coastY + 1;
+            destX = coastX;
+            pushDestination( 2 );
+
+            destY = coastY + 1;
+            destX = coastX - 1;
+            pushDestination( 3 );
+
+            destY = coastY;
+            destX = coastX - 1;
+            pushDestination( 4 );
+
+            destY = coastY - 1;
+            destX = coastX - 1;
+            pushDestination( 5 );
+
+            destY = coastY - 1;
+            destX = coastX;
+            pushDestination( 6 );
+
+        }
+
+    }
+
+    function pushDestination ( direction ) {
+
+        centerCoords( destX, destY );
+
+        navOptions.push( [ centerX - 15, centerY - 15, centerX + 15, centerY + 15, direction, destX, destY  ] );
+
+        mapDraw.beginPath();
+        mapDraw.fillStyle = "blue";
+        mapDraw.arc( centerX, centerY, 6, 0, 2 * Math.PI );
+        mapDraw.stroke();
+        mapDraw.closePath();
+
+
+    }
+
+
+    function drawPlanet( wanderer ) {
+
+//        console.log( wanderer );
+
+        x = wanderer.col * 35 + 17;
+        if ( wanderer.row%2 == 1 ) {
+            x += 18;
+        }
+
+        y = wanderer.row * 30 + 20;
+
+//        console.log( x+ "," + y );
+
+        mapDraw.beginPath();
+        mapDraw.arc( x, y, wanderer.diameter, 0, 2 * Math.PI);
+        mapDraw.fillStyle=wanderer.color;
+        mapDraw.fill();
+
+        mapDraw.stroke();
+        mapDraw.closePath();
+
+        if ( wanderer.gravity ) {
+
+            mapDraw.drawImage( document.getElementById("arrow1"), x-36, y-9, 18, 18 );
+            mapDraw.drawImage( document.getElementById("arrow2"), x-24, y-34, 19, 19 );
+            mapDraw.drawImage( document.getElementById("arrow3"), x+5, y-34, 19, 19 );
+            mapDraw.drawImage( document.getElementById("arrow4"), x+19, y-9, 18, 18 );
+            mapDraw.drawImage( document.getElementById("arrow5"), x+5, y+15, 18, 18 );
+            mapDraw.drawImage( document.getElementById("arrow6"), x-24, y+15, 18, 18 );
+
+        } else {
+
+            mapDraw.drawImage( document.getElementById("harrow1"), x-36, y-9, 18, 18 );
+            mapDraw.drawImage( document.getElementById("harrow2"), x-24, y-34, 20, 20 );
+            mapDraw.drawImage( document.getElementById("harrow3"), x+5, y-34, 21, 21 );
+            mapDraw.drawImage( document.getElementById("harrow4"), x+19, y-9, 18, 18 );
+            mapDraw.drawImage( document.getElementById("harrow5"), x+5, y+15, 21, 21 );
+            mapDraw.drawImage( document.getElementById("harrow6"), x-24, y+15, 20, 20 );
+        }
+
+        centerCoords( wanderer.col, wanderer.row );
+
+        gravHexes.push( [ 4, centerX, centerY,
+                                centerX + hexWidth, centerY - hexSide,
+                                centerX + (hexWidth * 3 / 2), y - ( hexSide / 2 ),
+                                centerX + (hexWidth * 3 / 2), y + ( hexSide / 2 ),
+                                centerX + hexWidth, centerY + hexSide,
+                                wanderer.col + 1, wanderer.row,
+                                wanderer
+                                ] );
+
+        gravHexes.push( [ 5, centerX, centerY,
+                                centerX + hexWidth, centerY + hexSide,
+                                centerX + hexWidth, centerY + hexSide*2,
+                                centerX + hexWidth/2, centerY + hexSide*5/2,
+                                centerX,  centerY + hexSide*2,
+                                wanderer.col + ( wanderer.row%2 ? 1 : 0 ), wanderer.row + 1,
+                                wanderer
+                                ] );
+
+        gravHexes.push( [ 6, centerX, centerY,
+                                centerX,  centerY + hexSide*2,
+                                centerX - hexWidth/2, centerY + hexSide*5/2,
+                                centerX - hexWidth, centerY + hexSide*2,
+                                centerX - hexWidth, centerY + hexSide,
+                                wanderer.col + ( wanderer.row%2 ? 0 : -1 ), wanderer.row + 1,
+                                wanderer
+                                ] );
+
+        gravHexes.push( [ 1, centerX, centerY,
+                                centerX - hexWidth, centerY - hexSide,
+                                centerX - (hexWidth * 3 / 2), y - ( hexSide / 2 ),
+                                centerX - (hexWidth * 3 / 2), y + ( hexSide / 2 ),
+                                centerX - hexWidth, centerY + hexSide,
+                                wanderer.col - 1, wanderer.row,
+                                wanderer
+                                ] );
+
+        gravHexes.push( [ 2, centerX, centerY,
+                                centerX - hexWidth, centerY - hexSide,
+                                centerX - hexWidth, centerY - hexSide*2,
+                                centerX - hexWidth/2, centerY - hexSide*5/2,
+                                centerX,  centerY - hexSide*2,
+                                wanderer.col + ( wanderer.row%2 ? 0 : -1 ), wanderer.row - 1,
+                                wanderer
+                                ] );
+
+        gravHexes.push( [ 3, centerX, centerY,
+                                centerX,  centerY - hexSide*2,
+                                centerX + hexWidth/2, centerY - hexSide*5/2,
+                                centerX + hexWidth, centerY - hexSide*2,
+                                centerX + hexWidth, centerY - hexSide,
+                                wanderer.col + ( wanderer.row%2 ? 1 : 0 ), wanderer.row - 1,
+                                wanderer
+                                ] );
+
+
+    }
+
+    function centerCoords( x, y ) {
+
+        centerY = y * 30 + 20;
+
+        centerX = x * 35 + 18;
+
+        if ( y%2 == 1 ) {
+            centerX += 18;
+        }
+
+    }
+
+    function drawDetection() {
+
+ //       console.log( detectionRange );
+
+        centerCoords( detectionRange[0][0], detectionRange[0][1] );
+
+        mapDraw.beginPath();
+        mapDraw.moveTo( centerX, centerY );
+
+        for ( let i=1; i<detectionRange.length; i++ ) {
+
+            centerCoords( detectionRange[i][0], detectionRange[i][1] );
+
+            mapDraw.lineTo( centerX, centerY );
+
+        }
+
+        centerCoords( detectionRange[0][0], detectionRange[0][1] );
+
+
+        mapDraw.lineTo( centerX, centerY );
+
+        mapDraw.stroke();
+        mapDraw.closePath();
+
+    }
+
+    function showHelp() {
+
+        document.getElementById("helpDiv").style.display = "block";
+
+    }
+
+    function hideHelp() {
+
+        document.getElementById("helpDiv").style.display = "none";
+
+    }
+
+    function showLittleMap() {
+
+        document.getElementById("theMap").style.display = "none";
+        document.getElementById("littleMap").style.display = "block";
+
+    }
+
+    function hideLittleMap() {
+
+        document.getElementById("theMap").style.display = "block";
+        document.getElementById("littleMap").style.display = "none";
+
+    }
+
+
+    function minorPlanet( col, row ) {
+
+        x = col * 35 + 17;
+        if ( row%2 == 1 ) {
+            x += 18;
+        }
+
+        y = row * 30 + 20;
+
+        mapDraw.drawImage( document.getElementById("minorplanet"), x-9, y-9, 18, 18 );
+
+    }
+
+
+    function asteroid( col, row ) {
+
+    //    console.log(col+","+row);
+
+        x = col * 35 + 17 + 19;
+        if ( row%2 == 1 ) {
+            x += 18;
+        }
+
+        y = row * 30 + 12;
+
+        switch ( Math.floor(Math.random()*3) ) {
+
+            case 0:
+                mapDraw.drawImage( document.getElementById("asteroid1"), x-36, y-9, 33, 33 );
+                break;
+
+
+            case 1:
+                mapDraw.drawImage( document.getElementById("asteroid2"), x-36, y-9, 33, 33 );
+                break;
+
+
+            case 2:
+                mapDraw.drawImage( document.getElementById("asteroid3"), x-36, y-9, 33, 33 );
+                break;
+        }
+
+
+
+    }
+
+    function mouseoverMap( theEvent ) {
+
+        row = Math.floor(theEvent.offsetY/30);
+
+        col = theEvent.offsetX;
+
+        if ( row%2 == 1 ) {
+            col-=18;
+        }
+
+        col = Math.floor(col/35);
+
+//        console.log( col + ", " + row );
+
+        document.getElementById("coords").innerText = col + ", " + row;
+
+        document.getElementById("none").style.display = "block";
+
+
+        for ( let i=0; i<planets.length; i++ ) {
+
+            document.getElementById(planets[i].name).style.display = "none";
+
+            if ( row == planets[i].row && col == planets[i].col) {
+
+              document.getElementById("none").style.display = "none";
+                document.getElementById(planets[i].name).style.display = "block";
+
+            }
+        }
+
+    }
+
+
+    // returns true iff the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+    function intersects(a,b,c,d,p,q,r,s) {
+      var det, gamma, lambda;
+      det = (c - a) * (s - q) - (r - p) * (d - b);
+      if (det === 0) {
+        return false;
+      } else {
+        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+      }
+    };
+
+
+    function lineIntersect(x1,y1,x2,y2, x3,y3,x4,y4) {
+        var x=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+        var y=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/((x1-x2)*(y3-y4)-(y1-y2)*(x3-x4));
+        if (isNaN(x)||isNaN(y)) {
+            return false;
+        } else {
+            if (x1>=x2) {
+                if (!(x2<=x&&x<=x1)) {return false;}
+            } else {
+                if (!(x1<=x&&x<=x2)) {return false;}
+            }
+            if (y1>=y2) {
+                if (!(y2<=y&&y<=y1)) {return false;}
+            } else {
+                if (!(y1<=y&&y<=y2)) {return false;}
+            }
+            if (x3>=x4) {
+                if (!(x4<=x&&x<=x3)) {return false;}
+            } else {
+                if (!(x3<=x&&x<=x4)) {return false;}
+            }
+            if (y3>=y4) {
+                if (!(y4<=y&&y<=y3)) {return false;}
+            } else {
+                if (!(y3<=y&&y<=y4)) {return false;}
+            }
+        }
+        return true;
+    }
+
+    function poly20( x, y, radius ) {
+
+        centerCoords( x, y );
+
+        newPoly = [];
+
+        for ( let m = 0; m < 20; m++ ) {
+
+            nextX = centerX + radius * Math.cos( 0.87 + m * 2 * Math.PI / 20 );
+
+            nextY = centerY + radius * Math.sin( 0.87 + m * 2 * Math.PI / 20 );
+
+            newPoly.push( nextX, nextY );
+
+        }
+
+        return newPoly;
+    }
+
+    function sqr( x ) {
+      return x * x;
+    }
+
+    function dist2( x1, y1, x2, y2 ) {
+
+      return ( sqr( x1 - x2 ) + sqr( y1 - y2 ) );
+
+    }
+
+    // this finds the shortest distance from a point to a line segment
+    // adapted from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+    function distPtoSeg( pX, pY, lX1, lY1, lX2, lY2 ) {
+
+      var segLength2 = dist2( lX1, lY1, lX2, lY2 );
+
+      if ( segLength2 == 0 ) {
+
+        return dist2( pX, pY, lX1, lY1 );
+
+      }
+
+      //
+      var t = ((pX - lX1) * (lX2 - lX1) + (pY - lY1) * (lY2 - lY1)) / segLength2;
+      t = Math.max(0, Math.min(1, t));
+
+      return Math.sqrt( dist2( pX, pY, lX1 + t * (lX2 - lX1), lY1 + t * (lY2 - lY1) ) );
+
+    }  // can't believe I was smart enough to steal that
+
+    function planetCrashedInto () {
+
+      centerCoords( oldShipX, oldShipY );
+      startX = centerX;
+      startY = centerY;
+
+      centerCoords( shipX, shipY );
+      endX = centerX;
+      endY = centerY;
+
+      return didMoveHitPlanet( startX, startY, endX, endY );
+    }
+
+    function didMoveHitPlanet ( startX, startY, endX, endY ) {
+
+//      console.log(startX, startY, endX, endY);
+
+      for ( let i = 0; i < planets.length; i++ ) {
+
+        centerCoords( planets[i].col, planets[i].row );
+
+        if ( i == 0 ) {
+//          console.log( centerX, centerY, startX, startY, endX, endY );
+//          console.log( distPtoSeg( centerX, centerY, startX, startY, endX, endY) );
+        }
+
+        if ( distPtoSeg( centerX, centerY, startX, startY, endX, endY) < planets[i].diameter / 2 ) {
+
+          return i;
+
+        }
+
+      }
+
+      return -1;
+
+    }
+
+
+</script>
+
+
+</body>
+<style>
+.center {
+  position: fixed;
+  left: 20%;
+  top: 20%;
+  display: none;
+  margin: auto;
+  width: 60%;
+  border: 3px solid grey;
+  padding: 10px;
+  background-color: white;
+}
+
+.myButton {
+    border: solid thin;
+    margin: 0.5vh;
+    border-radius: 10px;
+    padding: 0.3vh 0.7vh;
+    text-align: center;
+    box-shadow: 0.2vh 0.4vh;
+    background-color: white;
+
+}
+
+</style>
+</html>
