@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body onload="startUp()">
+<body onload="startUp()" onkeydown='keyDown(event)' onkeyup='keyUp(event)'>
 
     <div id="headerDiv" style="float:left; height: 10vh; width: 98vw;">
 
@@ -21,8 +21,14 @@
 
         <br>
         <br>
-        Boost off from Earth in a Transport with 10 units of fuel.
-        Reach Ganymede as quickly as possible without refueling.
+        <div id='missionStatement'>
+        </div>
+
+        <div class='myButton' onclick = "chooseScenario();"  style='width: 50%;'>
+          Choose Another
+        </div>
+
+        <br>
         <br>
         <br>
         <span style='font-family: "Arial Black", Gadget, sans-serif'>
@@ -33,6 +39,9 @@
         Mission Log:
         <br>
         <textArea id= "log" oninput='logChanged()' style="border: 1px solid; word-wrap: break-word;">[Terra]</textArea>
+        <div class='myButton' onclick = "startScenario();"  style='width: 50%;'>
+          Restart Scenario
+        </div>
         <br>
         <br>
             Fuel: <span id= "fuelSpan" style="">10</span>
@@ -56,7 +65,7 @@
         </div>
         <br>
 
-        <div id="infoDiv" style="">
+        <div id="infoDiv" style="position: fixed; bottom: 0; border: solid thin;">
 
 <span style="display: none;">            Coordinates: <span id="coords"></span><br><br></span>
 
@@ -66,9 +75,13 @@
             </div>
 
             <div id="Sol" style="display: none;">
-                Big ball o'fusion.
+                Sol, the sun ☉<br>
+                big ball o'fusion<br>
+                Diameter: 433,000 miles <br>
+                Surface Gravity: 274 m/s
             </div>
             <div id="Mercury" style="display: none;">
+              Mercury  ☿<br>
               Diameter: 4880km (3,000 miles, 0.38 x Terra) <br>
               Distance From Sun: 58,000,000km (36 million miles, 0.39 AU)<br>
               Surface Gravity: 3.7m/s<sup>2 (0.38g)</sup><br>
@@ -76,6 +89,7 @@
               Sol: 58.5 terran days<br>
             </div>
             <div id="Venus" style="display: none;">
+              Venus ♀<br>
               Diameter: 12,000km (7,500 miles, 0.95 x Terra) <br>
               Distance From Sun: 108,000,000km (67 million miles, 0.71 AU)<br>
               Surface Gravity: 8.9m/s<sup>2 (0.91g)</sup><br>
@@ -83,9 +97,14 @@
               Sol: 116.75 terran days<br>
             </div>
             <div id="Terra" style="display: none;">
-                Our home, for now.
+              Earth, Terra ♁<br>
+              Our home, for now.<br>
+              Diameter 7,900 miles<br>
+              Surface Gravity: 9.8m/s<br>
+
             </div>
             <div id="Mars" style="display: none;">
+              Mars ♂<br>
                 Diameter: 6778km  <br>
                 Distance From Sun: 230,000,000km<br>
                 Surface Gravity: 3.7m/s<sup>2</sup><br>
@@ -94,22 +113,32 @@
 
             </div>
             <div id="Jupiter" style="display: none;">
-                I think it's looking at us.
+                Jupiter ♃<br>
+                Diameter: 87,000 miles <br>
+                Surface Gravity: 24.8 m/s <br>
             </div>
             <div id="Luna" style="display: none;">
-                *The* Moon. Natural satellite
+                *The* Moon.  ☽ <br>
+                Natural satellite<br>
+                Diameter: 2,100 miles <br>
+                Surface Gravity: 1.6 m/s <br>
+
             </div>
             <div id="Callisto" style="display: none;">
-                Need data here.
+                Diameter: 4821km<br>
+                Surface Gravity: 1.2 m/2<br>
             </div>
             <div id="Ganymede" style="display: none;">
-                Fun name.
+                Diameter: 3,300 miles <br>
+                Surface Gravity: 1.4<br>
             </div>
             <div id="Io" style="display: none;">
-                So cold.
+                Diameter: 2,200 miles<br>
+                Surface Gravity: 1.8 m/s<br>
             </div>
             <div id="Ceres" style="display: none;">
-                Minor planet.
+                Diameter 587 miles<br>
+                Surface Gravity: 0.3 m/s <br>
             </div>
             <div id="Clandestine" style="display: none;">
                 Nothing here but worthless chunks of rock, floating in space.
@@ -119,17 +148,20 @@
 
         </div>
 
-        <div onclick = "showHelp();"  style=" border: solid thin; margin: auto">
+        <div class='myButton' onclick = "showHelp();"  style='width: 50%;'>
           Show Help
         </div>
 <br>
-        <div onmouseover = "showLittleMap();" onmouseout = "hideLittleMap();" style=" border: solid thin;">
-          mouseover to show overview map
+        <div onmouseover = "showLittleMap();" onmouseout = "hideLittleMap();" style=" border: solid thin; border-radius: 3px; width: 50%; font-size: 75%;">
+          Press Control Key  <br>
+          or mouseover this<br>
+          to show <br>
+          overview map <br>
         </div>
 
     </div>
 
-    <div id="mapDiv" style = "width: 80%; float: left; overflow: scroll; height: 80vh;" onmousemove="mouseoverMap(event)" onclick="mapClick(event)" >
+    <div id="mapDiv" style = "border: solid thick; width: 78%; float: left; overflow: scroll; height: 87vh;" onmousemove="mouseoverMap(event)" onclick="mapClick(event)" >
 
                 <canvas id="theMap" width="1225" height="1680" style="border:1px solid #000000; "></canvas>
                 <canvas id="cleanMap" width="1225" height="1680" style="border:1px solid #000000; display: none; "></canvas>
@@ -140,6 +172,39 @@
 
             <img src='transportcounter1.png' id='transportCounter' style='display: none;'>
 
+
+    </div>
+
+    <div id='newGameDiv' class='center' style='display: block;'>
+
+      <h2>
+        Welcome to the Triplanetary Astrogation Trainer!
+      </h2>
+
+      <p>
+
+        First, you should be familiar with the game <a href='http://www.sjgames.com/triplanetary/'>Triplanetary</a>
+        from Steve Jackson Games. In particular, you'll want to read the parts of the
+        <a href='http://www.sjgames.com/triplan/2018rules.pdf'>2018 Rules</a>
+        pertaining to astrogation.
+      </p>
+      <p>
+        You can plot your course by clicking on the map or entering the burns into the Mission Log.
+        Your ship is the blue Tranpsort counter. The green square shows where you'll end up
+        if you coast. The green circles show where you would end up if you burned in one of
+        the six directions. Click on one of the possible locations and the map and log will be updated.
+        You can edit the log and the map will be updated. Adding 0s means you are coasting, backspacing
+        over the last character undoes the last turn.
+      </p>
+      <p>
+        Not that this little toy is still under development. Lots of things are don't work or lack polish.
+
+      </p>
+
+      <span class='myButton' onclick='startScenario(1);'>Earth to Ganymede</span> using as little fuel as possible.
+      <br>
+      <br>
+      <span class='myButton' onclick='startScenario(2);'>Earth to Mars</span> in as few turns as possible.
 
     </div>
 
@@ -179,9 +244,10 @@
 
       </p>
       <p>
-        The trip took <span id='turnsToWin'></span> turns.
-
+        The trip took <span id='turnsToWin'></span> turns and <span id='fuelToWin'></span> units of fuel.
       </p>
+
+      <p id='evalDiv'></p>
 
       <span class='myButton' onclick='document.getElementById("winningDiv").style.display="none";'>Got it!</span>
 
@@ -400,24 +466,65 @@
         cleanMapDraw.drawImage( document.getElementById("theMap"), 0, 0 );
         pathMapDraw.drawImage( document.getElementById("theMap"), 0, 0 );
 
-        startScenario();
+        chooseScenario();
 
     }
 
-    function startScenario() {
+    function chooseScenario() {
+      document.getElementById('newGameDiv').style.display='block';
 
+    }
+
+    function startScenario( whichScenario ) {
+
+      document.getElementById('newGameDiv').style.display='none';
+
+      switch ( whichScenario ) {
+
+        case 1:
+
+          scenarioInProgress = 1;
+          shipX = planets[3].col;
+          shipY = planets[3].row;
+          shipFuel = scenarioFuel = 10;
+          shipVelocity = "";
+          whichPlanet = 3;
+          scenarioDestination = 8;
+
+          document.getElementById('missionStatement').innerText
+            = "Boost off from Earth in a Transport with 10 units of fuel. Land on Ganymede using as little fuel as possible.";
+
+
+          break;
+
+        case 2:
+        scenarioInProgress = 2;
         shipX = planets[3].col;
         shipY = planets[3].row;
         shipFuel = scenarioFuel = 10;
         shipVelocity = "";
-        shipStatus = statusLanded;
-//        landed = 3;
         whichPlanet = 3;
-        scenarioDestination = 8;
+        scenarioDestination = 4;
+
+        document.getElementById('missionStatement').innerText
+          = "Boost off from Earth in a Transport with 10 units of fuel. Land on Mars in as few turns as possible.";
+
+          break;
+      }
+
+        shipStatus = statusLanded;
 
         document.getElementById('log').value='[Terra]';
 
         velocityArray = [];
+
+        pathMapDraw.clearRect(0, 0, pathMap.width, pathMap.height);
+        pathMapDraw.drawImage( document.getElementById("cleanMap"), 0, 0 );
+
+        mapDraw.clearRect(0, 0, theMap.width, theMap.height);
+
+        mapDraw.drawImage( document.getElementById("pathMap"), 0, 0 );
+
 
         updateMap('startScenario');
 
@@ -656,6 +763,39 @@
             document.getElementById( 'winningDiv' ).style.display = 'block';
 
             document.getElementById( 'turnsToWin' ).innerText = document.getElementById('log').value.length - 7;
+            document.getElementById( 'fuelToWin' ).innerText = ( scenarioFuel - shipFuel );
+
+            switch ( scenarioInProgress ) {
+
+              case 1:
+
+                if ( scenarioFuel - shipFuel < 6 ) {
+                  document.getElementById('evalDiv').innerText =
+                    "Extraordinary! Please email your nav log to me, I want to know how you did that.";
+                } else if ( scenarioFuel - shipFuel == 6 ) {
+                  document.getElementById('evalDiv').innerText =
+                    "Great! That's the current best known score.";
+                } else {
+                  document.getElementById('evalDiv').innerText =
+                    "You can probably do better....";
+                }
+
+                  break;
+
+              case 2:
+
+              if ( document.getElementById('log').value.length - 7 < 12 ) {
+                document.getElementById('evalDiv').innerText =
+                  "Extraordinary! Please email your nav log to me, I want to know how you did that.";
+              } else if ( document.getElementById('log').value.length - 7 == 12 ) {
+                document.getElementById('evalDiv').innerText =
+                  "Great! That's the current best known score.";
+              } else {
+                document.getElementById('evalDiv').innerText =
+                  "You can probably do better....";
+
+              }
+            }
 
           } else {
             shipFuel = scenarioFuel;
@@ -1310,6 +1450,8 @@
 
     function showLittleMap() {
 
+      littleMapDraw.drawImage( document.getElementById("theMap"), 0, 0, 613, 825 );
+
         document.getElementById("theMap").style.display = "none";
         document.getElementById("littleMap").style.display = "block";
 
@@ -1319,6 +1461,22 @@
 
         document.getElementById("theMap").style.display = "block";
         document.getElementById("littleMap").style.display = "none";
+
+    }
+
+    function keyDown(event) {
+
+      if ( event.keyCode == 17 ) {
+        showLittleMap();
+      }
+
+    }
+
+    function keyUp(event) {
+
+      if ( event.keyCode == 17 ) {
+        hideLittleMap();
+      }
 
     }
 
